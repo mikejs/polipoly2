@@ -1,0 +1,10 @@
+*.pyc
+*.DS_Store
+*~
+build/
+*.egg-info
+docs/_build/*
+*.pid
+*.swp
+dist/
+MANIFEST

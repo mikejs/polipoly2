@@ -1,0 +1,2 @@
+recursive-include polipoly2/templates *
+recursive-include polipoly2/static *
