@@ -29,7 +29,7 @@ _state_nums = {
     '51': 'va', '53': 'wa', '54': 'wv', '55': 'wi', '56': 'wy', '72': 'pr',
 }
 
-_ogr2ogr = '/Library/Frameworks/GDAL.framework/Versions/1.7/Programs/ogr2ogr'
+_current_app = None
 
 
 def gml_to_wkt(polys):
@@ -100,13 +100,14 @@ def import_all():
             fname = '%s%s_%s' % (level, n, mid)
             os.system(
                 '%s -f GML /tmp/polipoly2/%s.gml /tmp/polipoly2/%s.shp' % (
-                    _ogr2ogr, fname, fname))
+                    _current_app.config['OGR2OGR_PATH'], fname, fname))
             import_sld_gml(state, level, '/tmp/polipoly2/%s.gml' % fname)
 
 
 if __name__ == '__main__':
-    import sys
-    create_app()
+    global _current_app
+    _current_app = create_app()
+
     from .database import metadata
     metadata.drop_all()
     metadata.create_all()
