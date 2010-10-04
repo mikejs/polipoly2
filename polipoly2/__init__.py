@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from models import init_engine, session
+from database import init_engine, session
 
 
 def create_app():

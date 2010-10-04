@@ -1,7 +1,27 @@
-from flask import current_app, Module, render_template
-from models import session, District
+from flask import current_app, Module, render_template, request, abort, jsonify
+from database import session
+from models import District
+from geoalchemy import *
 
 views = Module(__name__)
+
+
+@views.route("/search")
+def search():
+    try:
+        lat = request.args['lat']
+        long = request.args['long']
+    except KeyError:
+        abort(500)
+
+    result = []
+    for district in District.query.lat_long(lat, long):
+        print district.level
+        result.append({'level': district.level,
+                       'state': district.state,
+                       'name': district.name})
+
+    return jsonify({'districts': result})
 
 
 @views.route("/<state>/<dist>.kml")
