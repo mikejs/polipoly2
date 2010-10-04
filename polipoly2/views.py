@@ -17,7 +17,6 @@ def search():
 
     result = []
     for district in District.query.lat_long(lat, long):
-        print district.level
         result.append({'level': district.level,
                        'state': district.state,
                        'name': district.name})
