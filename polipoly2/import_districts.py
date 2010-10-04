@@ -41,7 +41,7 @@ def gml_to_wkt(polys):
     return "MULTIPOLYGON(%s)" % ', '.join(polys)
 
 
-def import_sld_gml(state, chamber, filename):
+def import_sld_gml(state, level, filename):
     with open(filename) as f:
         xml = etree.parse(f)
 
@@ -58,7 +58,7 @@ def import_sld_gml(state, chamber, filename):
         if name == 'State Senate Districts not defined':
             continue
 
-        district = District(level=chamber,
+        district = District(level=level,
                             state=state,
                             name=unicode(name),
                             geom=WKTSpatialElement(gml_to_wkt(geom),
@@ -70,20 +70,23 @@ def import_sld_gml(state, chamber, filename):
 def import_all():
     for n, state in _state_nums.items():
         if state not in ('ne', 'dc'):
-            chambers = ('su', 'sl', 'cd')
+            levels = ('su', 'sl', 'cd', 'co')
         else:
-            chambers = ('su', 'cd')
+            levels = ('su', 'cd', 'co')
 
-        for chamber in chambers:
-            if chamber in ('su', 'sl'):
-                dir = chamber + '06'
+        for level in levels:
+            if level in ('su', 'sl'):
+                dir = level + '06'
                 mid = 'd11'
-            else:
-                dir = chamber + '110'
+            elif level == 'cd':
+                dir = level + '110'
                 mid = '110'
-            
+            elif level == 'co':
+                dir = level + '00'
+                mid = 'd00'
+
             url = ("http://www.census.gov/geo/cob/bdy/"
-                   "%s/%sshp/%s%s_%s_shp.zip" % (chamber, dir, chamber,
+                   "%s/%sshp/%s%s_%s_shp.zip" % (level, dir, level,
                                                  n, mid))
 
             print "Downloading %s" % url
@@ -94,11 +97,11 @@ def import_all():
             zip = zipfile.ZipFile(data)
             zip.extractall(os.path.dirname('/tmp/polipoly2/'))
 
-            fname = '%s%s_%s' % (chamber, n, mid)
+            fname = '%s%s_%s' % (level, n, mid)
             os.system(
                 '%s -f GML /tmp/polipoly2/%s.gml /tmp/polipoly2/%s.shp' % (
                     _ogr2ogr, fname, fname))
-            import_sld_gml(state, chamber, '/tmp/polipoly2/%s.gml' % fname)
+            import_sld_gml(state, level, '/tmp/polipoly2/%s.gml' % fname)
 
 
 if __name__ == '__main__':
@@ -107,5 +110,6 @@ if __name__ == '__main__':
     from .database import metadata
     metadata.drop_all()
     metadata.create_all()
+    session.commit()
 
     import_all()
