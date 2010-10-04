@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import re
-from models import session, District
-
-from polipoly2 import create_app
 
 from lxml import etree
-from geoalchemy import *
+from geoalchemy import WKTSpatialElement
+
+from . import create_app
+from .models import District
+from .database import session
 
 _namespaces = {'ogr': 'http://ogr.maptools.org/',
                'gml': 'http://www.opengis.net/gml'}
@@ -40,4 +41,7 @@ def import_sld_gml(filename):
 if __name__ == '__main__':
     import sys
     create_app()
+    from .database import metadata
+    metadata.drop_all()
+    metadata.create_all()
     import_sld_gml(sys.argv[1])

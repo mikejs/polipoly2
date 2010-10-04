@@ -1,7 +1,7 @@
 from flask import current_app, Module, render_template, request, abort, jsonify
-from database import session
-from models import District
-from geoalchemy import *
+
+from .database import session
+from .models import District
 
 views = Module(__name__)
 

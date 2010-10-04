@@ -1,9 +1,8 @@
-from database import Model, GeoQuery
-
-from sqlalchemy import *
-from sqlalchemy.orm import *
-from geoalchemy import *
+from sqlalchemy import Column, Unicode, Integer
+from geoalchemy import GeometryColumn, MultiPolygon, GeometryDDL
 from geoalchemy.postgis import PGComparator
+
+from .database import Model, GeoQuery
 
 
 class District(Model):
