@@ -64,3 +64,41 @@ def geojson(state, level, dist):
                     "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS83"}}}
 
     return jsonify(resp)
+
+
+@views.route('/<state>/<level>/<dist>.svg')
+def svg(state, level, dist):
+    dist = session.query(District, District.geom.svg).filter(and_(
+        District.level == level,
+        District.state == state,
+        District.name == dist)).first()
+
+    if not dist:
+        abort(404)
+
+    coords = dist[0].geom.coords(session)
+    minx, miny = 1000, 1000
+    maxx, maxy = -1000, -1000
+    for c in coords:
+        for [x, y] in c:
+            if x < minx:
+                minx = x
+            if x > maxx:
+                maxx = x
+            if y < miny:
+                miny = y
+            if y > maxy:
+                maxy = y
+
+    width = abs(maxx - minx)
+    height = abs(maxy - miny)
+
+    resp = current_app.make_response(render_template('out.svg',
+                                                     name=dist[0].name,
+                                                     path=dist[1],
+                                                     minx=minx,
+                                                     miny=-maxy,
+                                                     height=height,
+                                                     width=width))
+    resp.mimetype = 'image/svg+xml'
+    return resp
