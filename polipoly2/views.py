@@ -1,4 +1,5 @@
 from flask import current_app, Module, render_template, request, abort, jsonify
+from sqlalchemy import and_
 
 from .database import session
 from .models import District
@@ -24,12 +25,18 @@ def search():
     return jsonify({'districts': result})
 
 
-@views.route("/<state>/<dist>.kml")
-def kml(state, dist):
-    dist = session.query(District.name, District.geom.kml).filter(
-        District.state == state and District.name == dist).first()
+@views.route("/<state>/<level>/<dist>.kml")
+def kml(state, level, dist):
+    dist = session.query(District, District.geom.kml).filter(and_(
+        District.level == level,
+        District.state == state,
+        District.name == dist)).first()
+
+    if not dist:
+        abort(404)
+
     resp = current_app.make_response(render_template('out.kml',
-                                                     name=dist[0],
+                                                     name=dist[0].name,
                                                      kml=dist[1]))
     resp.mimetype = 'application/vnd.google-earth.kml+xml'
     return resp
