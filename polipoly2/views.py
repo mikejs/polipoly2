@@ -1,4 +1,5 @@
-from flask import current_app, Module, render_template, request, abort, jsonify
+from flask import current_app, Module, render_template, request, abort
+from flask import json, jsonify
 from sqlalchemy import and_
 
 from .database import session
@@ -39,3 +40,27 @@ def kml(state, level, dist):
                                                      kml=dist[1]))
     resp.mimetype = 'application/vnd.google-earth.kml+xml'
     return resp
+
+
+@views.route('/<state>/<level>/<dist>.json')
+def geojson(state, level, dist):
+    dist = session.query(District, District.geom.geojson).filter(and_(
+        District.level == level,
+        District.state == state,
+        District.name == dist)).first()
+
+    if not dist:
+        abort(404)
+
+    district = dist[0]
+    feature = json.loads(dist[1])
+
+    resp = {"type": "Feature",
+            "properties": {"state": district.state,
+                           "level": district.level,
+                           "name": district.name},
+            "geometry": feature,
+            "crs": {"type": "name",
+                    "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS83"}}}
+
+    return jsonify(resp)
