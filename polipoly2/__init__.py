@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 
-from .database import init_engine, session
+from .database import init_engine, session, metadata
 
 
 def create_app():

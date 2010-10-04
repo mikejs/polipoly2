@@ -33,7 +33,7 @@ class Model(object):
     query_class = orm.Query
     query = _QueryProperty()
 
-Model = declarative_base(cls=Model, name='Model')
+Model = declarative_base(cls=Model, name='Model', metadata=metadata)
 
 
 class _GeoQuery(orm.Query):
