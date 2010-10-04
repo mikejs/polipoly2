@@ -70,14 +70,21 @@ def import_sld_gml(state, chamber, filename):
 def import_all():
     for n, state in _state_nums.items():
         if state not in ('ne', 'dc'):
-            chambers = ('su', 'sl')
+            chambers = ('su', 'sl', 'cd')
         else:
-            chambers = ('su',)
+            chambers = ('su', 'cd')
 
         for chamber in chambers:
+            if chamber in ('su', 'sl'):
+                dir = chamber + '06'
+                mid = 'd11'
+            else:
+                dir = chamber + '110'
+                mid = '110'
+            
             url = ("http://www.census.gov/geo/cob/bdy/"
-                   "%s/%s06shp/%s%s_d11_shp.zip" % (chamber, chamber,
-                                                    chamber, n))
+                   "%s/%sshp/%s%s_%s_shp.zip" % (chamber, dir, chamber,
+                                                 n, mid))
 
             print "Downloading %s" % url
 
@@ -87,7 +94,7 @@ def import_all():
             zip = zipfile.ZipFile(data)
             zip.extractall(os.path.dirname('/tmp/polipoly2/'))
 
-            fname = '%s%s_d11' % (chamber, n)
+            fname = '%s%s_%s' % (chamber, n, mid)
             os.system(
                 '%s -f GML /tmp/polipoly2/%s.gml /tmp/polipoly2/%s.shp' % (
                     _ogr2ogr, fname, fname))
