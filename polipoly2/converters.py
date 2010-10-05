@@ -4,6 +4,7 @@ from werkzeug.routing import BaseConverter, ValidationError
 def register_converters(app):
     app.url_map.converters['latitude'] = LatitudeConverter
     app.url_map.converters['longitude'] = LongitudeConverter
+    app.url_map.converters['chamber'] = ChamberConverter
 
 
 def _str_to_latlong(value):
@@ -71,3 +72,26 @@ class LongitudeConverter(BaseConverter):
             raise ValidationError()
 
         return str(value)
+
+
+class ChamberConverter(BaseConverter):
+    regex = r'(upper|lower|house|senate|assembly|asm|h|s|a)'
+
+    _conv = {'upper': 'upper',
+             'senate': 'upper',
+             's': 'upper',
+             'lower': 'lower',
+             'house': 'lower',
+             'h': 'lower',
+             'assembly': 'lower',
+             'asm': 'lower',
+             'a': 'lower'}
+
+    def to_python(self, value):
+        return self._conv[value]
+
+    def to_url(self, value):
+        if value not in self._conv:
+            raise ValidationError()
+
+        return value

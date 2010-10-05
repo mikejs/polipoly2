@@ -42,10 +42,34 @@ def search():
     return jsonify({'districts': ret})
 
 
-@views.route("/<state>/<level>/<dist>.kml")
-def kml(state, level, dist):
+@views.route('/districts/<state>/counties/<name>.kml')
+def counties(state, name):
     dist = session.query(District, District.geom.kml).filter(and_(
-        District.level == level,
+        District.level == 'co',
+        District.state == state,
+        District.name == name)).first()
+
+    if not dist:
+        abort(404)
+
+    resp = current_app.make_response(render_template('out.kml',
+                                                     name=dist[0].name,
+                                                     kml=dist[1]))
+    resp.mimetype = 'application/vnd.google-earth.kml+xml'
+    return resp
+
+
+@views.route("/districts/<state>/<level>/<chamber:chamber>/<name>.kml")
+def kml(state, level, chamber, name):
+    if level == 'state' and chamber == 'upper':
+        type = 'su'
+    elif level == 'state' and chamber == 'lower':
+        type = 'sl'
+    else:
+        abort(404)
+
+    dist = session.query(District, District.geom.kml).filter(and_(
+        District.level == type,
         District.state == state,
         District.name == dist)).first()
 
