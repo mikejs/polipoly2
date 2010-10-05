@@ -9,22 +9,8 @@ from .placefinder import geocode
 views = Module(__name__)
 
 
-@views.route("/search")
-def search():
-    if 'lat' in request.args and 'long' in request.args:
-        lat = request.args['lat']
-        long = request.args['long']
-    elif 'location' in request.args:
-        results = geocode(request.args['location'])
-
-        if not results:
-            abort(404)
-
-        lat = results[0]['latitude']
-        long = results[0]['longitude']
-    else:
-        abort(404)
-
+@views.route('/districts/<latitude:lat>,<longitude:long>/')
+def districts(lat, long):
     result = []
     for district in District.query.lat_long(lat, long):
         result.append({'level': district.level,
@@ -32,6 +18,28 @@ def search():
                        'name': district.name})
 
     return jsonify({'districts': result})
+
+
+@views.route("/districts/search")
+def search():
+    if 'location' not in request.args:
+        abort(400)
+
+    results = geocode(request.args['location'])
+
+    if not results:
+        abort(404)
+
+    lat = results[0]['latitude']
+    long = results[0]['longitude']
+
+    ret = []
+    for district in District.query.lat_long(lat, long):
+        ret.append({'level': district.level,
+                       'state': district.state,
+                       'name': district.name})
+
+    return jsonify({'districts': ret})
 
 
 @views.route("/<state>/<level>/<dist>.kml")
