@@ -4,17 +4,26 @@ from sqlalchemy import and_
 
 from .database import session
 from .models import District
+from .placefinder import geocode
 
 views = Module(__name__)
 
 
 @views.route("/search")
 def search():
-    try:
+    if 'lat' in request.args and 'long' in request.args:
         lat = request.args['lat']
         long = request.args['long']
-    except KeyError:
-        abort(500)
+    elif 'location' in request.args:
+        results = geocode(request.args['location'])
+
+        if not results:
+            abort(404)
+
+        lat = results[0]['latitude']
+        long = results[0]['longitude']
+    else:
+        abort(404)
 
     result = []
     for district in District.query.lat_long(lat, long):
