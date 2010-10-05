@@ -47,10 +47,7 @@ def counties(state, name):
     dist = session.query(District, District.geom.kml).filter(and_(
         District.level == 'co',
         District.state == state,
-        District.name == name)).first()
-
-    if not dist:
-        abort(404)
+        District.name == name)).first_or_404()
 
     resp = current_app.make_response(render_template('out.kml',
                                                      name=dist[0].name,
@@ -71,10 +68,7 @@ def kml(state, level, chamber, name):
     dist = session.query(District, District.geom.kml).filter(and_(
         District.level == type,
         District.state == state,
-        District.name == dist)).first()
-
-    if not dist:
-        abort(404)
+        District.name == name)).first_or_404()
 
     resp = current_app.make_response(render_template('out.kml',
                                                      name=dist[0].name,
@@ -88,10 +82,7 @@ def geojson(state, level, dist):
     dist = session.query(District, District.geom.geojson).filter(and_(
         District.level == level,
         District.state == state,
-        District.name == dist)).first()
-
-    if not dist:
-        abort(404)
+        District.name == dist)).first_or_404()
 
     district = dist[0]
     feature = json.loads(dist[1])
@@ -112,10 +103,7 @@ def svg(state, level, dist):
     dist = session.query(District, District.geom.svg).filter(and_(
         District.level == level,
         District.state == state,
-        District.name == dist)).first()
-
-    if not dist:
-        abort(404)
+        District.name == dist)).first_or_404()
 
     coords = dist[0].geom.coords(session)
     minx, miny = 1000, 1000

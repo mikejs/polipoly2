@@ -1,11 +1,13 @@
 from sqlalchemy import orm, create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy import WKTSpatialElement
+from flask import abort
 
 engine = None
 session = orm.scoped_session(lambda: orm.create_session(bind=engine,
                                                         autoflush=False,
-                                                        autocommit=False))
+                                                        autocommit=False,
+                                                        query_cls=Query))
 metadata = MetaData()
 
 
@@ -36,7 +38,17 @@ class Model(object):
 Model = declarative_base(cls=Model, name='Model', metadata=metadata)
 
 
-class _GeoQuery(orm.Query):
+class Query(orm.Query):
+    def first_or_404(self):
+        first = self.first()
+
+        if first is None:
+            abort(404)
+
+        return first
+
+
+class _GeoQuery(Query):
     def __init__(self, cls, entities, session=None):
         super(_GeoQuery, self).__init__(entities, session=session)
         self.cls = cls
