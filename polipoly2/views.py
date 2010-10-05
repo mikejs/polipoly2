@@ -44,7 +44,7 @@ def search():
 
 @views.route('/districts/<state>/counties/<name>.kml')
 def counties(state, name):
-    dist = session.query(District, District.geom.kml).filter(and_(
+    dist = District.query.add_columns(District.geom.kml).filter(and_(
         District.level == 'co',
         District.state == state,
         District.name == name)).first_or_404()
@@ -65,7 +65,7 @@ def kml(state, level, chamber, name):
     else:
         abort(404)
 
-    dist = session.query(District, District.geom.kml).filter(and_(
+    dist = District.query.add_columns(District.geom.kml).filter(and_(
         District.level == type,
         District.state == state,
         District.name == name)).first_or_404()
@@ -79,7 +79,7 @@ def kml(state, level, chamber, name):
 
 @views.route('/<state>/<level>/<dist>.json')
 def geojson(state, level, dist):
-    dist = session.query(District, District.geom.geojson).filter(and_(
+    dist = District.query.add_columns(District.geom.geojson).filter(and_(
         District.level == level,
         District.state == state,
         District.name == dist)).first_or_404()
@@ -100,7 +100,7 @@ def geojson(state, level, dist):
 
 @views.route('/<state>/<level>/<dist>.svg')
 def svg(state, level, dist):
-    dist = session.query(District, District.geom.svg).filter(and_(
+    dist = District.query.add_columns(District.geom.svg).filter(and_(
         District.level == level,
         District.state == state,
         District.name == dist)).first_or_404()
