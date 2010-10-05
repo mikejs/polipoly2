@@ -29,15 +29,6 @@ class _TableNameProperty(object):
         return cls.__dict__.get('__tablename__')
 
 
-class Model(object):
-    __tablename__ = _TableNameProperty()
-
-    query_class = orm.Query
-    query = _QueryProperty()
-
-Model = declarative_base(cls=Model, name='Model', metadata=metadata)
-
-
 class Query(orm.Query):
     def first_or_404(self):
         first = self.first()
@@ -46,6 +37,15 @@ class Query(orm.Query):
             abort(404)
 
         return first
+
+
+class Model(object):
+    __tablename__ = _TableNameProperty()
+
+    query_class = Query
+    query = _QueryProperty()
+
+Model = declarative_base(cls=Model, name='Model', metadata=metadata)
 
 
 class _GeoQuery(Query):
